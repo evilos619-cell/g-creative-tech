@@ -116,11 +116,24 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { location } = useRouterState();
+  const isErrorRoute = location.pathname.startsWith("/lovable");
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      {isErrorRoute ? (
+        <Outlet />
+      ) : (
+        <>
+          <Navbar />
+          <main className="min-h-screen pt-16">
+            <Outlet />
+          </main>
+          <Footer />
+          <ScrollTop />
+          <WhatsAppFab />
+        </>
+      )}
     </QueryClientProvider>
   );
 }
