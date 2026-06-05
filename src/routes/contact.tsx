@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Phone, Mail, MessageCircle, Send, MapPin, Clock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SITE } from "@/lib/site";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -21,19 +22,34 @@ export const Route = createFileRoute("/contact")({
 function Contact() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     const form = e.currentTarget;
     const data = new FormData(form);
-    const text = `Hello G-Creative Tech!%0A%0AName: ${data.get("name")}%0AEmail: ${data.get("email")}%0AService: ${data.get("service")}%0A%0A${data.get("message")}`;
-    setTimeout(() => {
-      window.open(`${SITE.whatsapp}?text=${text}`, "_blank");
-      setLoading(false);
-      setSent(true);
-      form.reset();
-    }, 600);
+    const name = String(data.get("name") ?? "");
+    const email = String(data.get("email") ?? "");
+    const phone = String(data.get("phone") ?? "");
+    const service = String(data.get("service") ?? "");
+    const message = String(data.get("message") ?? "");
+
+    // Save to Supabase so it appears in the admin dashboard.
+    const { error: dbError } = await supabase.from("service_requests").insert({
+      name, email, phone: phone || null, service: service || null, message, status: "pending",
+    });
+    if (dbError) {
+      setError("Couldn't save your request, but we can still route it to WhatsApp.");
+      console.error(dbError);
+    }
+
+    const text = `Hello G-Creative Tech!%0A%0AName: ${encodeURIComponent(name)}%0AEmail: ${encodeURIComponent(email)}%0AService: ${encodeURIComponent(service)}%0A%0A${encodeURIComponent(message)}`;
+    window.open(`${SITE.whatsapp}?text=${text}`, "_blank");
+    setLoading(false);
+    setSent(true);
+    form.reset();
   };
 
   return (

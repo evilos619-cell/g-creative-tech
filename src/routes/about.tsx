@@ -3,16 +3,16 @@ import { motion } from "framer-motion";
 import { Target, Eye, Heart, Award, Users, Calendar, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/site/SectionHeading";
-import { TEAM, STATS } from "@/lib/content";
+import { TEAM, STATS, TIMELINE } from "@/lib/content";
 import { Counter } from "@/components/site/Counter";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
       { title: "About — G-Creative Tech" },
-      { name: "description", content: "Meet G-Creative Tech: the team behind the websites, brands, growth and repairs our clients love." },
+      { name: "description", content: "Meet G-Creative Tech: led by CEO Goodness Chukwuma Ibeabuchi, building tech, brands, growth and repair services trusted by clients across Nigeria." },
       { property: "og:title", content: "About G-Creative Tech" },
-      { property: "og:description", content: "Our story, mission, and the people building tech that works." },
+      { property: "og:description", content: "Our story, mission, and the leadership behind G-Creative Tech." },
     ],
     links: [{ rel: "canonical", href: "/about" }],
   }),
@@ -24,14 +24,6 @@ const VALUES = [
   { icon: Award, title: "Excellence", desc: "We obsess over quality — from a logo curve to a code line." },
   { icon: Users, title: "Partnership", desc: "Your success is our success. We're invested in your growth." },
   { icon: Target, title: "Impact", desc: "Every project must move the needle for our client." },
-];
-
-const TIMELINE = [
-  { year: "2018", title: "Founded", desc: "Started as a one-man repair shop in Etomi." },
-  { year: "2020", title: "Digital pivot", desc: "Added web design and branding services." },
-  { year: "2022", title: "Growth team", desc: "Launched social media growth division." },
-  { year: "2024", title: "Full hub", desc: "Became a complete tech hub serving clients globally." },
-  { year: "2026", title: "Going further", desc: "Expanding into product development and IoT repairs." },
 ];
 
 function About() {
@@ -48,7 +40,7 @@ function About() {
             Built on craft. <br /><span className="gradient-text">Driven by results.</span>
           </motion.h1>
           <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-            G-Creative Tech started in a small repair shop. Today we're a complete tech hub helping businesses build, grow and shine — both online and offline.
+            G-Creative Tech is a complete tech hub helping businesses build, grow and shine — both online and offline.
           </p>
         </div>
       </section>
@@ -94,26 +86,41 @@ function About() {
         </div>
       </section>
 
-      {/* Team */}
+      {/* Leadership / Crew */}
       <section className="py-20 bg-background/40">
         <div className="container mx-auto px-4 lg:px-8">
-          <SectionHeading eyebrow="Our team" title={<>Meet the <span className="gradient-text">crew</span></>} />
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <SectionHeading
+            eyebrow="Leadership"
+            title={<>Meet the <span className="gradient-text">crew</span></>}
+            description="The leadership driving G-Creative Tech forward."
+          />
+          <div className="grid md:grid-cols-1 max-w-3xl mx-auto gap-6">
             {TEAM.map((m, i) => (
-              <motion.div
+              <motion.article
                 key={m.name}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.06 }}
-                className="glass rounded-2xl p-6 text-center"
+                className="glass rounded-3xl p-6 md:p-10 grid md:grid-cols-[260px_1fr] gap-8 items-center"
               >
-                <div className="mx-auto h-20 w-20 rounded-full bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center text-primary-foreground text-2xl font-bold">
-                  {m.initials}
+                <div className="relative mx-auto md:mx-0">
+                  <div className="absolute -inset-2 rounded-3xl bg-gradient-to-br from-primary/40 to-primary-glow/20 blur-xl opacity-70" />
+                  <img
+                    src={m.photo}
+                    alt={`${m.name} — ${m.position}`}
+                    loading="lazy"
+                    className="relative h-56 w-56 md:h-60 md:w-60 rounded-3xl object-cover border-2 border-primary/40 glow-ring"
+                  />
                 </div>
-                <h3 className="mt-4 font-semibold">{m.name}</h3>
-                <p className="text-sm text-muted-foreground">{m.role}</p>
-              </motion.div>
+                <div className="text-center md:text-left">
+                  <span className="text-xs uppercase tracking-[0.25em] text-primary font-bold">
+                    {m.position}
+                  </span>
+                  <h3 className="mt-2 text-2xl md:text-3xl font-bold">{m.name}</h3>
+                  <p className="mt-4 text-muted-foreground leading-relaxed">{m.description}</p>
+                </div>
+              </motion.article>
             ))}
           </div>
         </div>
@@ -159,23 +166,23 @@ function About() {
       <section className="py-20 bg-background/40">
         <div className="container mx-auto px-4 lg:px-8 max-w-3xl">
           <SectionHeading eyebrow="Our journey" title={<>The G-Creative <span className="gradient-text">timeline</span></>} />
-          <div className="relative pl-8 border-l-2 border-primary/30 space-y-8">
+          <div className="relative pl-8 border-l-2 border-primary/30 space-y-10">
             {TIMELINE.map((t, i) => (
               <motion.div
-                key={t.year}
+                key={`${t.year}-${t.title}`}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08 }}
                 className="relative"
               >
-                <div className="absolute -left-[37px] h-4 w-4 rounded-full bg-primary glow-ring" />
+                <div className="absolute -left-[37px] h-4 w-4 rounded-full bg-primary glow-ring animate-pulse" />
                 <div className="flex items-center gap-3 mb-2">
                   <Calendar className="h-4 w-4 text-primary" />
-                  <span className="text-primary font-bold">{t.year}</span>
+                  <span className="text-primary font-bold tracking-widest">{t.year}</span>
                 </div>
-                <h3 className="text-xl font-semibold">{t.title}</h3>
-                <p className="text-muted-foreground">{t.desc}</p>
+                <h3 className="text-xl md:text-2xl font-semibold">{t.title}</h3>
+                <p className="text-muted-foreground mt-1">{t.desc}</p>
               </motion.div>
             ))}
           </div>

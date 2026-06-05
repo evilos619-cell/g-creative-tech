@@ -1,16 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { X, FolderOpen, Loader2, ExternalLink, Calendar } from "lucide-react";
 import { SectionHeading } from "@/components/site/SectionHeading";
-import { PORTFOLIO, PORTFOLIO_CATEGORIES } from "@/lib/content";
+import { PORTFOLIO_CATEGORIES } from "@/lib/content";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
     meta: [
       { title: "Portfolio — G-Creative Tech" },
-      { name: "description", content: "Selected work across web, branding, social media growth and electronics repair." },
+      { name: "description", content: "Selected work across web design, branding, social media growth and electronics repair." },
       { property: "og:title", content: "Portfolio — G-Creative Tech" },
       { property: "og:description", content: "Real projects. Real results. See what we've built and repaired." },
     ],
@@ -19,13 +20,61 @@ export const Route = createFileRoute("/portfolio")({
   component: Portfolio,
 });
 
-function Portfolio() {
-  const [filter, setFilter] = useState<(typeof PORTFOLIO_CATEGORIES)[number]>("All");
-  const [selected, setSelected] = useState<typeof PORTFOLIO[0] | null>(null);
+type Item = {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  project_url: string | null;
+  client_name: string | null;
+  completed_at: string | null;
+  tags: string[] | null;
+  category: string;
+};
 
-  const items = useMemo(
-    () => (filter === "All" ? PORTFOLIO : PORTFOLIO.filter((p) => p.category === filter)),
-    [filter],
+function Portfolio() {
+  const [filter, setFilter] = useState<string>("All");
+  const [selected, setSelected] = useState<Item | null>(null);
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data, error } = await supabase
+        .from("portfolio_items")
+        .select("id,title,description,image_url,project_url,client_name,completed_at,tags,portfolio_categories(name)")
+        .eq("published", true)
+        .order("created_at", { ascending: false });
+      if (!active) return;
+      if (error) {
+        console.error("[portfolio] fetch error:", error.message);
+        setItems([]);
+      } else {
+        setItems(
+          (data ?? []).map((row: any) => ({
+            id: row.id,
+            title: row.title,
+            description: row.description,
+            image_url: row.image_url,
+            project_url: row.project_url,
+            client_name: row.client_name,
+            completed_at: row.completed_at,
+            tags: row.tags,
+            category: row.portfolio_categories?.name ?? "Other",
+          })),
+        );
+      }
+      setLoading(false);
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const filtered = useMemo(
+    () => (filter === "All" ? items : items.filter((p) => p.category === filter)),
+    [items, filter],
   );
 
   return (
@@ -60,64 +109,62 @@ function Portfolio() {
             ))}
           </div>
 
-          <motion.div layout className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence>
-              {items.map((p) => (
-                <motion.button
-                  key={p.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  onClick={() => setSelected(p)}
-                  className="glass rounded-2xl overflow-hidden group text-left hover:border-primary/50 transition-all"
-                >
-                  <div className="aspect-video relative bg-gradient-to-br from-primary/30 to-primary-glow/10 grid-bg">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-6xl font-bold gradient-text opacity-30">{p.title.charAt(0)}</span>
-                    </div>
-                    <span className="absolute top-3 left-3 text-[10px] uppercase tracking-widest bg-primary/90 text-primary-foreground px-2 py-1 rounded-full font-bold">{p.category}</span>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="font-semibold group-hover:text-primary transition-colors">{p.title}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{p.description}</p>
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {p.tags.map((t) => (
-                        <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{t}</span>
-                      ))}
-                    </div>
-                  </div>
-                </motion.button>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Before & After repair gallery */}
-      <section className="pb-24">
-        <div className="container mx-auto px-4 lg:px-8">
-          <SectionHeading eyebrow="Repair gallery" title={<>Before &amp; <span className="gradient-text">after</span></>} />
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { label: "Amplifier restoration" },
-              { label: "Solar inverter recovery" },
-              { label: "PA system overhaul" },
-            ].map((r) => (
-              <div key={r.label} className="glass rounded-2xl p-6">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-destructive/30 to-destructive/10 flex items-center justify-center text-xs uppercase tracking-widest text-muted-foreground">Before</div>
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-primary/40 to-primary-glow/20 flex items-center justify-center text-xs uppercase tracking-widest text-primary">After</div>
-                </div>
-                <h3 className="mt-4 font-semibold">{r.label}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">Brought back to factory-fresh performance.</p>
+          {loading ? (
+            <div className="flex items-center justify-center py-24 text-muted-foreground gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" /> Loading projects…
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="glass rounded-3xl py-20 text-center max-w-xl mx-auto">
+              <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/15 flex items-center justify-center">
+                <FolderOpen className="h-8 w-8 text-primary" />
               </div>
-            ))}
-          </div>
+              <h3 className="mt-5 text-xl font-bold">No projects yet</h3>
+              <p className="mt-2 text-muted-foreground">
+                Our admin will publish projects here soon. Check back shortly.
+              </p>
+            </div>
+          ) : (
+            <motion.div layout className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <AnimatePresence>
+                {filtered.map((p) => (
+                  <motion.button
+                    key={p.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    onClick={() => setSelected(p)}
+                    className="glass rounded-2xl overflow-hidden group text-left hover:border-primary/50 transition-all"
+                  >
+                    <div className="aspect-video relative bg-gradient-to-br from-primary/30 to-primary-glow/10 grid-bg overflow-hidden">
+                      {p.image_url ? (
+                        <img src={p.image_url} alt={p.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-6xl font-bold gradient-text opacity-30">{p.title.charAt(0)}</span>
+                        </div>
+                      )}
+                      <span className="absolute top-3 left-3 text-[10px] uppercase tracking-widest bg-primary/90 text-primary-foreground px-2 py-1 rounded-full font-bold">{p.category}</span>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-semibold group-hover:text-primary transition-colors">{p.title}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{p.description}</p>
+                      {p.tags && p.tags.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {p.tags.map((t) => (
+                            <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{t}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </motion.button>
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
         </div>
       </section>
 
-      {/* Modal */}
       <AnimatePresence>
         {selected && (
           <motion.div
@@ -132,24 +179,42 @@ function Portfolio() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="glass rounded-3xl max-w-2xl w-full p-8 relative"
+              className="glass rounded-3xl max-w-2xl w-full p-8 relative max-h-[90vh] overflow-y-auto"
             >
               <button onClick={() => setSelected(null)} className="absolute top-4 right-4 h-9 w-9 rounded-full bg-secondary flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors">
                 <X className="h-4 w-4" />
               </button>
-              <div className="aspect-video rounded-2xl bg-gradient-to-br from-primary/30 to-primary-glow/10 grid-bg flex items-center justify-center mb-6">
-                <span className="text-7xl font-bold gradient-text opacity-30">{selected.title.charAt(0)}</span>
+              <div className="aspect-video rounded-2xl bg-gradient-to-br from-primary/30 to-primary-glow/10 grid-bg flex items-center justify-center mb-6 overflow-hidden">
+                {selected.image_url ? (
+                  <img src={selected.image_url} alt={selected.title} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-7xl font-bold gradient-text opacity-30">{selected.title.charAt(0)}</span>
+                )}
               </div>
               <span className="text-xs uppercase tracking-widest text-primary font-bold">{selected.category}</span>
               <h3 className="text-2xl font-bold mt-2">{selected.title}</h3>
-              <p className="mt-3 text-muted-foreground">{selected.description}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {selected.tags.map((t) => (
-                  <span key={t} className="text-xs px-3 py-1 rounded-full bg-secondary text-muted-foreground">{t}</span>
-                ))}
-              </div>
-              <div className="mt-6">
-                <Button variant="hero">Start a similar project</Button>
+              {selected.client_name && (
+                <p className="mt-1 text-sm text-muted-foreground">Client: <span className="text-foreground">{selected.client_name}</span></p>
+              )}
+              {selected.completed_at && (
+                <p className="mt-1 text-sm text-muted-foreground flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" /> {new Date(selected.completed_at).toLocaleDateString()}
+                </p>
+              )}
+              {selected.description && <p className="mt-3 text-muted-foreground">{selected.description}</p>}
+              {selected.tags && selected.tags.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {selected.tags.map((t) => (
+                    <span key={t} className="text-xs px-3 py-1 rounded-full bg-secondary text-muted-foreground">{t}</span>
+                  ))}
+                </div>
+              )}
+              <div className="mt-6 flex flex-wrap gap-3">
+                {selected.project_url && (
+                  <a href={selected.project_url} target="_blank" rel="noreferrer">
+                    <Button variant="hero">Visit project <ExternalLink className="h-4 w-4" /></Button>
+                  </a>
+                )}
               </div>
             </motion.div>
           </motion.div>
