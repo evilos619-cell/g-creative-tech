@@ -1,14 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import {
   ArrowRight, CheckCircle2, Sparkles, ShieldCheck, Zap, Truck, BadgeCheck, Award,
-  Star, Quote, Search,
+  Star, Quote, Search, FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { Counter } from "@/components/site/Counter";
-import { SERVICE_CATEGORIES, STATS, PROCESS, TESTIMONIALS, FAQ, PORTFOLIO } from "@/lib/content";
+import { SERVICE_CATEGORIES, STATS, PROCESS, TESTIMONIALS, FAQ } from "@/lib/content";
 import { SITE } from "@/lib/site";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,6 +26,17 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const [projects, setProjects] = useState<any[]>([]);
+  useEffect(() => {
+    supabase
+      .from("recent_projects")
+      .select("*")
+      .eq("published", true)
+      .order("created_at", { ascending: false })
+      .limit(6)
+      .then(({ data }) => setProjects(data ?? []));
+  }, []);
+
   return (
     <>
       {/* HERO */}
@@ -220,29 +233,43 @@ function Home() {
             eyebrow="Selected work"
             title={<>Recent <span className="gradient-text">projects</span></>}
           />
-          <div className="grid md:grid-cols-3 gap-6">
-            {PORTFOLIO.slice(0, 6).map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.07 }}
-                className="glass rounded-2xl overflow-hidden group cursor-pointer hover:border-primary/50 transition-all"
-              >
-                <div className="aspect-video relative bg-gradient-to-br from-primary/30 to-primary-glow/10 grid-bg">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-5xl font-bold gradient-text opacity-30">{p.title.charAt(0)}</span>
+          {projects.length === 0 ? (
+            <div className="glass rounded-3xl py-16 text-center max-w-xl mx-auto">
+              <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center">
+                <FolderOpen className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="mt-4 text-lg font-bold">Projects coming soon</h3>
+              <p className="mt-1 text-sm text-muted-foreground">New work will be showcased here shortly.</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-6">
+              {projects.map((p, i) => (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.07 }}
+                  className="glass rounded-2xl overflow-hidden group cursor-pointer hover:border-primary/50 transition-all"
+                >
+                  <div className="aspect-video relative bg-gradient-to-br from-primary/30 to-primary-glow/10 grid-bg overflow-hidden">
+                    {p.image_url ? (
+                      <img src={p.image_url} alt={p.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-5xl font-bold gradient-text opacity-30">{p.title.charAt(0)}</span>
+                      </div>
+                    )}
+                    {p.category && <span className="absolute top-3 left-3 text-[10px] uppercase tracking-widest bg-primary/90 text-primary-foreground px-2 py-1 rounded-full font-bold">{p.category}</span>}
                   </div>
-                  <span className="absolute top-3 left-3 text-[10px] uppercase tracking-widest bg-primary/90 text-primary-foreground px-2 py-1 rounded-full font-bold">{p.category}</span>
-                </div>
-                <div className="p-5">
-                  <h3 className="font-semibold group-hover:text-primary transition-colors">{p.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{p.description}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  <div className="p-5">
+                    <h3 className="font-semibold group-hover:text-primary transition-colors">{p.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{p.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
           <div className="text-center mt-10">
             <Link to="/portfolio"><Button variant="glass">View full portfolio <ArrowRight className="h-4 w-4" /></Button></Link>
           </div>
