@@ -4,6 +4,7 @@ import {
   Tv, Speaker, Volume2, Sun, Fan, Lightbulb, Zap, Cog,
   type LucideIcon,
 } from "lucide-react";
+import ceoPhoto from "@/assets/ceo-goodness.png.asset.json";
 
 export type Service = {
   slug: string;
@@ -89,22 +90,41 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
   },
 ];
 
-export const TEAM = [
-  { name: "Godwin C.", role: "Founder & Lead Engineer", initials: "GC" },
-  { name: "Ada O.", role: "Creative Director", initials: "AO" },
-  { name: "Tomi A.", role: "Social Growth Lead", initials: "TA" },
-  { name: "Emeka N.", role: "Senior Repair Technician", initials: "EN" },
-  { name: "Chiamaka U.", role: "Web Developer", initials: "CU" },
-  { name: "David K.", role: "Brand Designer", initials: "DK" },
+export type TeamMember = {
+  name: string;
+  position: string;
+  description: string;
+  photo: string;
+  initials: string;
+};
+
+// Public site displays only the CEO until admins add more crew members via the dashboard.
+export const TEAM: TeamMember[] = [
+  {
+    name: "GOODNESS CHUKWUMA IBEABUCHI",
+    position: "Chief Executive Officer (CEO)",
+    description:
+      "Founder and Chief Executive Officer of G-Creative Tech, leading innovation, digital transformation, creative services, technology solutions, electronics repair services, and business growth initiatives.",
+    photo: ceoPhoto.url,
+    initials: "GC",
+  },
 ];
 
-export const TESTIMONIALS = [
-  { name: "Mrs. Adeola", role: "Boutique Owner", quote: "G-Creative Tech built my online store in a week. Sales doubled in the first month.", rating: 5 },
-  { name: "Mr. Ibrahim", role: "Church Pastor", quote: "They fixed our amplifier and PA when no one else could. Total professionals.", rating: 5 },
-  { name: "Chika E.", role: "Skincare Brand", quote: "My Instagram grew from 800 to 12k organic followers in 3 months.", rating: 5 },
-  { name: "Engr. Bayo", role: "Solar Installer", quote: "They repaired three inverters our supplier said were dead. Saved us a fortune.", rating: 5 },
-  { name: "Linda T.", role: "Restaurant Owner", quote: "Beautiful logo, beautiful flyers, beautiful website. One stop, zero stress.", rating: 5 },
-  { name: "Tunde A.", role: "Event Planner", quote: "Fast delivery, fair pricing, premium quality. Now my go-to for everything tech.", rating: 5 },
+export type Testimonial = {
+  name: string;
+  role: string;
+  quote: string;
+  rating: number;
+};
+
+// Default seed list — same names appear in the database after running supabase-schema.sql.
+export const TESTIMONIALS: Testimonial[] = [
+  { name: "KAMZYBOT'S MEDIA", role: "Media & Content Partner", quote: "G-Creative Tech delivered our brand identity and website on time and on point. Total professionals.", rating: 5 },
+  { name: "SAMMY STORE LOGS", role: "Retail & Logs Business", quote: "From our store website to our daily social media, G-Creative Tech runs the digital side flawlessly.", rating: 5 },
+  { name: "GOD'S GRACE SURPLUS VALUE", role: "Wholesale & Supply", quote: "They built our online presence from scratch. Sales conversations now come in every single day.", rating: 5 },
+  { name: "PAKMOIL", role: "Energy & Distribution", quote: "Reliable, fast and creative. They understood our brand and elevated everything we put out.", rating: 5 },
+  { name: "RUXLOGS", role: "Logs & E-commerce", quote: "Smooth process, premium output. We trust G-Creative Tech with every new launch we plan.", rating: 5 },
+  { name: "OG SKATTER BACK", role: "Music & Entertainment", quote: "Branding, graphics, social media — they handled everything and made my brand stand out.", rating: 5 },
 ];
 
 export const FAQ = [
@@ -122,25 +142,35 @@ export const FAQ = [
   { category: "Social", q: "Do you guarantee follower growth?", a: "We guarantee real, organic engagement and growth. No bots — ever." },
 ];
 
-export const PORTFOLIO = [
-  { id: 1, title: "Bella Boutique E-commerce", category: "Web", description: "A modern online store for a fashion boutique with full payment integration.", tags: ["E-commerce", "React", "Payments"] },
-  { id: 2, title: "Sunrise Solar Branding", category: "Branding", description: "Complete brand identity for a renewable energy startup.", tags: ["Logo", "Brand Kit", "Print"] },
-  { id: 3, title: "Skincare Instagram Growth", category: "Social", description: "0 → 12k organic followers in 90 days for a Lagos skincare brand.", tags: ["Growth", "Content", "Reels"] },
-  { id: 4, title: "Vintage Amplifier Restoration", category: "Repair", description: "Restored a 1980s amplifier to factory performance.", tags: ["Audio", "Restoration"] },
-  { id: 5, title: "FreshFruit Landing Page", category: "Web", description: "High-converting landing page for a fresh produce delivery startup.", tags: ["Landing", "Conversion"] },
-  { id: 6, title: "Church PA System Repair", category: "Repair", description: "Diagnosed and repaired a complete PA + amplifier setup.", tags: ["Audio", "Diagnostics"] },
-  { id: 7, title: "Restaurant Brand & Flyers", category: "Branding", description: "Logo, menu and flyer design for a new restaurant launch.", tags: ["Logo", "Print"] },
-  { id: 8, title: "Solar Inverter Recovery", category: "Repair", description: "Recovered 3 'dead' inverters for a solar installation company.", tags: ["Solar", "Inverter"] },
-  { id: 9, title: "Tech Founder Portfolio", category: "Web", description: "Personal portfolio site for a tech founder with blog and case studies.", tags: ["Portfolio", "Blog"] },
-];
+// Hardcoded portfolio removed — all items now come from Supabase (portfolio_items).
+// Empty arrays here keep static imports working; pages fetch from DB at runtime.
+export type PortfolioItem = {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  tags: string[];
+  image_url?: string | null;
+};
+export const PORTFOLIO: PortfolioItem[] = [];
 
-export const PORTFOLIO_CATEGORIES = ["All", "Web", "Branding", "Social", "Repair"] as const;
+export const PORTFOLIO_CATEGORIES = [
+  "All",
+  "Website Design",
+  "Web Development",
+  "Branding",
+  "Graphics Design",
+  "Social Media",
+  "Electronics Repairs",
+  "Digital Marketing",
+  "Other",
+] as const;
 
 export const STATS = [
   { label: "Projects Delivered", value: 320 },
   { label: "Happy Clients", value: 180 },
   { label: "Devices Repaired", value: 540 },
-  { label: "Years Experience", value: 7 },
+  { label: "Years Experience", value: 2 },
 ];
 
 export const PROCESS = [
@@ -148,4 +178,12 @@ export const PROCESS = [
   { step: "02", title: "Design", description: "We craft a plan and design that fits your brand." },
   { step: "03", title: "Deliver", description: "We build, ship and refine until you're thrilled." },
   { step: "04", title: "Support", description: "Ongoing support, maintenance and growth." },
+];
+
+export const TIMELINE = [
+  { year: "2024", title: "Founded", desc: "G-Creative Tech is established with a focus on repairs and creative services." },
+  { year: "2025", title: "Digital Pivot", desc: "Expanded into web design, development and digital solutions." },
+  { year: "2025", title: "Growth Team", desc: "Launched a dedicated social media growth and marketing team." },
+  { year: "2025", title: "Full Hub", desc: "Became a complete tech hub — one place, many solutions." },
+  { year: "2026", title: "Going Further", desc: "Scaling into product development, IoT and global client work." },
 ];
