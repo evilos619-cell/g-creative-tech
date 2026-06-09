@@ -6,6 +6,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { FileUpload } from "@/components/site/FileUpload";
+
+const IMAGE_FIELDS = new Set(["image_url", "photo_url", "logo_url", "avatar_url", "cover_url"]);
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -300,7 +303,9 @@ function PortfolioForm({ item, cats, onSave, onCancel }: any) {
         </select>
       </FormField>
       <FormField label="Description"><textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputCls} /></FormField>
-      <FormField label="Image URL"><input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className={inputCls} placeholder="https://..." /></FormField>
+      <FormField label="Image">
+        <FileUpload value={form.image_url} onChange={(url) => setForm({ ...form, image_url: url })} folder="portfolio" />
+      </FormField>
       <FormField label="Project URL"><input value={form.project_url} onChange={(e) => setForm({ ...form, project_url: e.target.value })} className={inputCls} placeholder="https://..." /></FormField>
       <div className="grid grid-cols-2 gap-3">
         <FormField label="Client name"><input value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })} className={inputCls} /></FormField>
@@ -592,7 +597,9 @@ function GenericForm({ fields, item, onSave, onCancel }: { fields: FieldDef[]; i
     <form onSubmit={(e) => { e.preventDefault(); onSave(form); }} className="space-y-3">
       {fields.map((f) => (
         <FormField key={f.name} label={f.label + (f.required ? " *" : "")}>
-          {f.type === "textarea" ? (
+          {IMAGE_FIELDS.has(f.name) ? (
+            <FileUpload value={form[f.name] ?? ""} onChange={(url) => setForm({ ...form, [f.name]: url })} folder={f.name.replace(/_url$/, "")} />
+          ) : f.type === "textarea" ? (
             <textarea required={f.required} rows={3} value={form[f.name] ?? ""} onChange={(e) => setForm({ ...form, [f.name]: e.target.value })} className={inputCls} />
           ) : f.type === "checkbox" ? (
             <label className="flex items-center gap-2 text-sm pt-2">

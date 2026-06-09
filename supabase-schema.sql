@@ -212,3 +212,30 @@ on conflict do nothing;
 --   select id, 'admin' from auth.users where email = 'goodnesschukwuma619@gmail.com'
 --   on conflict do nothing;
 -- ============================================================
+
+-- ============================================================
+-- STORAGE BUCKET — media (for admin file uploads)
+-- ============================================================
+insert into storage.buckets (id, name, public)
+values ('media', 'media', true)
+on conflict (id) do update set public = true;
+
+-- Public read of media files (bucket is public anyway, but explicit policy
+-- is required when RLS is enforced on storage.objects).
+drop policy if exists "Public read media" on storage.objects;
+create policy "Public read media" on storage.objects for select
+  using (bucket_id = 'media');
+
+-- Only admins can upload, update, or delete media files.
+drop policy if exists "Admins upload media" on storage.objects;
+create policy "Admins upload media" on storage.objects for insert to authenticated
+  with check (bucket_id = 'media' and public.has_role(auth.uid(), 'admin'));
+
+drop policy if exists "Admins update media" on storage.objects;
+create policy "Admins update media" on storage.objects for update to authenticated
+  using (bucket_id = 'media' and public.has_role(auth.uid(), 'admin'))
+  with check (bucket_id = 'media' and public.has_role(auth.uid(), 'admin'));
+
+drop policy if exists "Admins delete media" on storage.objects;
+create policy "Admins delete media" on storage.objects for delete to authenticated
+  using (bucket_id = 'media' and public.has_role(auth.uid(), 'admin'));

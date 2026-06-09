@@ -1,13 +1,15 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X, Zap, Shield } from "lucide-react";
 import { NAV_LINKS, SITE } from "@/lib/site";
 import { Button } from "@/components/ui/button";
+import { useAdminRole } from "@/hooks/useAdminRole";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { location } = useRouterState();
+  const { isAdmin } = useAdminRole();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -49,6 +51,15 @@ export function Navbar() {
               {l.label}
             </Link>
           ))}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
+              activeProps={{ className: "text-primary" }}
+            >
+              <Shield className="h-3.5 w-3.5" /> Admin
+            </Link>
+          )}
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
@@ -80,6 +91,15 @@ export function Navbar() {
                 {l.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="px-4 py-3 rounded-lg text-base font-medium hover:bg-secondary transition-colors inline-flex items-center gap-2"
+                activeProps={{ className: "text-primary bg-secondary" }}
+              >
+                <Shield className="h-4 w-4" /> Admin
+              </Link>
+            )}
             <a href={SITE.whatsapp} target="_blank" rel="noreferrer" className="mt-2">
               <Button variant="hero" className="w-full">Get a Quote</Button>
             </a>
