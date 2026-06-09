@@ -239,3 +239,37 @@ create policy "Admins update media" on storage.objects for update to authenticat
 drop policy if exists "Admins delete media" on storage.objects;
 create policy "Admins delete media" on storage.objects for delete to authenticated
   using (bucket_id = 'media' and public.has_role(auth.uid(), 'admin'));
+
+-- ============================================================
+-- AUTO-PROMOTE OWNER EMAIL TO ADMIN
+-- The first time goodnesschukwuma619@gmail.com signs up at /auth,
+-- a trigger inserts an 'admin' role row automatically. Whatever
+-- password is chosen on that signup becomes the admin password.
+-- Also back-fills if the user already exists.
+-- ============================================================
+create or replace function public.auto_promote_owner()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.email = 'goodnesschukwuma619@gmail.com' then
+    insert into public.user_roles (user_id, role)
+    values (new.id, 'admin')
+    on conflict (user_id, role) do nothing;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created_promote_owner on auth.users;
+create trigger on_auth_user_created_promote_owner
+  after insert on auth.users
+  for each row execute function public.auto_promote_owner();
+
+-- Back-fill if the account already exists
+insert into public.user_roles (user_id, role)
+select id, 'admin' from auth.users
+where email = 'goodnesschukwuma619@gmail.com'
+on conflict (user_id, role) do nothing;
