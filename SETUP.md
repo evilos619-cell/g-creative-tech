@@ -26,18 +26,18 @@ testimonials, the CEO team member, and 8 portfolio categories.
 
 ## 2. Create your admin account
 
+The schema installs a trigger that automatically promotes
+`goodnesschukwuma619@gmail.com` to `admin` the moment that account is
+created (and back-fills the role if the account already exists).
+
 1. Visit `/auth` on your site, click **Create one**, and sign up with
-   `goodnesschukwuma619@gmail.com`.
-2. Check your inbox and confirm the email.
-3. Back in Supabase **SQL Editor**, run:
-
-   ```sql
-   insert into public.user_roles (user_id, role)
-   select id, 'admin' from auth.users where email = 'goodnesschukwuma619@gmail.com'
-   on conflict do nothing;
-   ```
-
-4. Visit `/admin` — you should land on the dashboard.
+   `goodnesschukwuma619@gmail.com`. Whatever password you choose here
+   becomes your admin password.
+2. Confirm the email if confirmation is enabled in Supabase Auth
+   settings (or disable email confirmation in **Auth → Providers →
+   Email** for instant access).
+3. Visit `/admin` — you're in. The **Admin** link also appears in the
+   navbar.
 
 ## 3. Using the dashboard
 
