@@ -20,8 +20,9 @@ extra configuration files are needed.
 2. Paste the entire contents of `supabase-schema.sql` (in the repo root).
 3. Click **Run**.
 
-This creates the tables, RLS policies and seeds the 6 testimonials,
-the CEO team member, and 8 portfolio categories.
+This creates the tables, RLS policies, the **`media` storage bucket**
+(used by the admin upload widget) with its policies, and seeds the 6
+testimonials, the CEO team member, and 8 portfolio categories.
 
 ## 2. Create your admin account
 
