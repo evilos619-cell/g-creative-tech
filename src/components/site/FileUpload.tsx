@@ -1,26 +1,18 @@
 import { useCallback, useRef, useState } from "react";
 import { Loader2, Upload, X, Image as ImageIcon } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 
 type Props = {
   value: string;
   onChange: (url: string) => void;
-  /** Storage bucket name. Default: "media". */
   bucket?: string;
-  /** Folder path inside the bucket. Default: "uploads". */
   folder?: string;
-  /** Accepted MIME types. Default: images. */
   accept?: string;
-  /** Max size in MB. Default: 5. */
   maxSizeMB?: number;
   label?: string;
 };
 
-/**
- * FileUpload — drag-and-drop + click-to-pick image uploader backed by Supabase Storage.
- * Stores files in the configured bucket and returns the resulting public URL.
- */
 export function FileUpload({
   value,
   onChange,
@@ -48,10 +40,7 @@ export function FileUpload({
     async (file: File) => {
       setError(null);
       const err = validate(file);
-      if (err) {
-        setError(err);
-        return;
-      }
+      if (err) { setError(err); return; }
       setUploading(true);
       setProgress(20);
       try {
@@ -84,7 +73,6 @@ export function FileUpload({
 
   const removeImage = async () => {
     if (!value) return;
-    // Try to delete from storage if the URL belongs to our bucket
     try {
       const marker = `/storage/v1/object/public/${bucket}/`;
       const idx = value.indexOf(marker);
@@ -93,7 +81,7 @@ export function FileUpload({
         await supabase.storage.from(bucket).remove([path]);
       }
     } catch {
-      // ignore — clearing the field is still valid
+      // ignore
     }
     onChange("");
   };
@@ -126,16 +114,9 @@ export function FileUpload({
       ) : (
         <div
           onClick={() => inputRef.current?.click()}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragging(true);
-          }}
+          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragging(false);
-            onFiles(e.dataTransfer.files);
-          }}
+          onDrop={(e) => { e.preventDefault(); setDragging(false); onFiles(e.dataTransfer.files); }}
           className={`cursor-pointer rounded-xl border-2 border-dashed p-5 text-center transition-colors ${
             dragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 bg-secondary/40"
           }`}

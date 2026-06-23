@@ -4,7 +4,6 @@ import {
   Tv, Speaker, Volume2, Sun, Fan, Lightbulb, Zap, Cog,
   type LucideIcon,
 } from "lucide-react";
-import ceoPhoto from "@/assets/ceo-goodness.png.asset.json";
 
 export type Service = {
   slug: string;
@@ -98,14 +97,13 @@ export type TeamMember = {
   initials: string;
 };
 
-// Public site displays only the CEO until admins add more crew members via the dashboard.
 export const TEAM: TeamMember[] = [
   {
     name: "GOODNESS CHUKWUMA IBEABUCHI",
     position: "Chief Executive Officer (CEO)",
     description:
       "Founder and Chief Executive Officer of G-Creative Tech, leading innovation, digital transformation, creative services, technology solutions, electronics repair services, and business growth initiatives.",
-    photo: ceoPhoto.url,
+    photo: "/ceo-goodness.png",
     initials: "GC",
   },
 ];
@@ -117,7 +115,6 @@ export type Testimonial = {
   rating: number;
 };
 
-// Default seed list — same names appear in the database after running supabase-schema.sql.
 export const TESTIMONIALS: Testimonial[] = [
   { name: "KAMZYBOT'S MEDIA", role: "Media & Content Partner", quote: "G-Creative Tech delivered our brand identity and website on time and on point. Total professionals.", rating: 5 },
   { name: "SAMMY STORE LOGS", role: "Retail & Logs Business", quote: "From our store website to our daily social media, G-Creative Tech runs the digital side flawlessly.", rating: 5 },
@@ -142,8 +139,6 @@ export const FAQ = [
   { category: "Social", q: "Do you guarantee follower growth?", a: "We guarantee real, organic engagement and growth. No bots — ever." },
 ];
 
-// Hardcoded portfolio removed — all items now come from Supabase (portfolio_items).
-// Empty arrays here keep static imports working; pages fetch from DB at runtime.
 export type PortfolioItem = {
   id: string;
   title: string;

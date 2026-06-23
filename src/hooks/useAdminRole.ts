@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
-/**
- * useAdminRole — returns { isAdmin, userId, loading } and keeps in sync with auth state.
- * Checks the public.user_roles table for a role='admin' row for the current user.
- */
 export function useAdminRole() {
   const [state, setState] = useState<{ isAdmin: boolean; userId: string | null; loading: boolean }>(
     { isAdmin: false, userId: null, loading: true },

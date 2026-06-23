@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -6,32 +6,7 @@ import { SectionHeading } from "@/components/site/SectionHeading";
 import { FAQ } from "@/lib/content";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/faq")({
-  head: () => ({
-    meta: [
-      { title: "FAQ — G-Creative Tech" },
-      { name: "description", content: "Answers to common questions about our web, design, growth and repair services." },
-      { property: "og:title", content: "FAQ — G-Creative Tech" },
-      { property: "og:description", content: "Quick answers to common questions." },
-    ],
-    links: [{ rel: "canonical", href: "/faq" }],
-    scripts: [{
-      type: "application/ld+json",
-      children: JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        mainEntity: FAQ.map((f) => ({
-          "@type": "Question",
-          name: f.q,
-          acceptedAnswer: { "@type": "Answer", text: f.a },
-        })),
-      }),
-    }],
-  }),
-  component: FaqPage,
-});
-
-function FaqPage() {
+export default function FaqPage() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("All");
 

@@ -1,23 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Target, Eye, Heart, Award, Users, Calendar, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { TEAM, STATS, TIMELINE } from "@/lib/content";
 import { Counter } from "@/components/site/Counter";
-
-export const Route = createFileRoute("/about")({
-  head: () => ({
-    meta: [
-      { title: "About — G-Creative Tech" },
-      { name: "description", content: "Meet G-Creative Tech: led by CEO Goodness Chukwuma Ibeabuchi, building tech, brands, growth and repair services trusted by clients across Nigeria." },
-      { property: "og:title", content: "About G-Creative Tech" },
-      { property: "og:description", content: "Our story, mission, and the leadership behind G-Creative Tech." },
-    ],
-    links: [{ rel: "canonical", href: "/about" }],
-  }),
-  component: About,
-});
 
 const VALUES = [
   { icon: Heart, title: "Integrity", desc: "Honest pricing, honest timelines, honest results." },
@@ -26,7 +13,7 @@ const VALUES = [
   { icon: Target, title: "Impact", desc: "Every project must move the needle for our client." },
 ];
 
-function About() {
+export default function About() {
   return (
     <>
       <section className="relative py-24 overflow-hidden">

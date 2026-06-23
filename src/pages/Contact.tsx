@@ -1,25 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Phone, Mail, MessageCircle, Send, MapPin, Clock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SITE } from "@/lib/site";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
-export const Route = createFileRoute("/contact")({
-  head: () => ({
-    meta: [
-      { title: "Contact — G-Creative Tech" },
-      { name: "description", content: "Get in touch with G-Creative Tech. Call, WhatsApp, Telegram or email — we reply fast." },
-      { property: "og:title", content: "Contact G-Creative Tech" },
-      { property: "og:description", content: "Reach us via WhatsApp, Telegram, phone or email. We're here to help." },
-    ],
-    links: [{ rel: "canonical", href: "/contact" }],
-  }),
-  component: Contact,
-});
-
-function Contact() {
+export default function Contact() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +22,6 @@ function Contact() {
     const service = String(data.get("service") ?? "");
     const message = String(data.get("message") ?? "");
 
-    // Save to Supabase so it appears in the admin dashboard.
     const { error: dbError } = await supabase.from("service_requests").insert({
       name, email, phone: phone || null, service: service || null, message, status: "pending",
     });
@@ -116,6 +101,11 @@ function Contact() {
                   placeholder="Tell us a bit about what you need..."
                 />
               </div>
+              {error && (
+                <div className="sm:col-span-2">
+                  <p className="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-lg p-3">{error}</p>
+                </div>
+              )}
               <div className="sm:col-span-2 flex items-center gap-3 justify-end">
                 {sent && <span className="text-primary text-sm">Opened in WhatsApp ✓</span>}
                 <Button variant="hero" type="submit" disabled={loading}>

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,20 +6,7 @@ import { SectionHeading } from "@/components/site/SectionHeading";
 import { SERVICE_CATEGORIES } from "@/lib/content";
 import { SITE } from "@/lib/site";
 
-export const Route = createFileRoute("/services")({
-  head: () => ({
-    meta: [
-      { title: "Services — G-Creative Tech" },
-      { name: "description", content: "Digital solutions, creative services, social media growth and electronics repair services. Everything you need, in one place." },
-      { property: "og:title", content: "Our Services — G-Creative Tech" },
-      { property: "og:description", content: "Four practices, one team. Websites, brands, growth and repairs." },
-    ],
-    links: [{ rel: "canonical", href: "/services" }],
-  }),
-  component: Services,
-});
-
-function Services() {
+export default function Services() {
   return (
     <>
       <section className="relative py-24 overflow-hidden">

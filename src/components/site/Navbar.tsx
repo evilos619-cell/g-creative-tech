@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { NavLink, Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Menu, X, Zap, Shield } from "lucide-react";
 import { NAV_LINKS, SITE } from "@/lib/site";
@@ -8,7 +8,7 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { location } = useRouterState();
+  const location = useLocation();
   const { isAdmin } = useAdminRole();
 
   useEffect(() => {
@@ -41,24 +41,30 @@ export function Navbar() {
 
         <nav className="hidden lg:flex items-center gap-1">
           {NAV_LINKS.map((l) => (
-            <Link
+            <NavLink
               key={l.to}
               to={l.to}
-              className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative"
-              activeProps={{ className: "text-primary" }}
-              activeOptions={{ exact: l.to === "/" }}
+              end={l.to === "/"}
+              className={({ isActive }) =>
+                `px-4 py-2 text-sm font-medium transition-colors relative ${
+                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                }`
+              }
             >
               {l.label}
-            </Link>
+            </NavLink>
           ))}
           {isAdmin && (
-            <Link
+            <NavLink
               to="/admin"
-              className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
-              activeProps={{ className: "text-primary" }}
+              className={({ isActive }) =>
+                `px-4 py-2 text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
+                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                }`
+              }
             >
               <Shield className="h-3.5 w-3.5" /> Admin
-            </Link>
+            </NavLink>
           )}
         </nav>
 
@@ -81,24 +87,30 @@ export function Navbar() {
         <div className="lg:hidden border-t border-border bg-background/95 backdrop-blur-xl">
           <nav className="flex flex-col p-4 gap-1">
             {NAV_LINKS.map((l) => (
-              <Link
+              <NavLink
                 key={l.to}
                 to={l.to}
-                className="px-4 py-3 rounded-lg text-base font-medium hover:bg-secondary transition-colors"
-                activeProps={{ className: "text-primary bg-secondary" }}
-                activeOptions={{ exact: l.to === "/" }}
+                end={l.to === "/"}
+                className={({ isActive }) =>
+                  `px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                    isActive ? "text-primary bg-secondary" : "hover:bg-secondary"
+                  }`
+                }
               >
                 {l.label}
-              </Link>
+              </NavLink>
             ))}
             {isAdmin && (
-              <Link
+              <NavLink
                 to="/admin"
-                className="px-4 py-3 rounded-lg text-base font-medium hover:bg-secondary transition-colors inline-flex items-center gap-2"
-                activeProps={{ className: "text-primary bg-secondary" }}
+                className={({ isActive }) =>
+                  `px-4 py-3 rounded-lg text-base font-medium transition-colors inline-flex items-center gap-2 ${
+                    isActive ? "text-primary bg-secondary" : "hover:bg-secondary"
+                  }`
+                }
               >
                 <Shield className="h-4 w-4" /> Admin
-              </Link>
+              </NavLink>
             )}
             <a href={SITE.whatsapp} target="_blank" rel="noreferrer" className="mt-2">
               <Button variant="hero" className="w-full">Get a Quote</Button>

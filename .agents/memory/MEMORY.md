@@ -1,0 +1,1 @@
+- [Supabase empty URL crash](supabase-empty-url.md) — `createClient` throws synchronously with empty/falsy URL; always use a placeholder URL when env vars are missing.

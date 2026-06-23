@@ -1,21 +1,10 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Loader2, LogIn, UserPlus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
-export const Route = createFileRoute("/auth")({
-  head: () => ({
-    meta: [
-      { title: "Sign in — G-Creative Tech" },
-      { name: "description", content: "Sign in or create an account to access your G-Creative Tech dashboard." },
-      { name: "robots", content: "noindex,nofollow" },
-    ],
-  }),
-  component: AuthPage,
-});
-
-function AuthPage() {
+export default function Auth() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -26,7 +15,7 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/admin" });
+      if (data.session) navigate("/admin");
     });
   }, [navigate]);
 
@@ -48,7 +37,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/admin" });
+        navigate("/admin");
       }
     } catch (err: any) {
       setError(err?.message ?? "Something went wrong.");

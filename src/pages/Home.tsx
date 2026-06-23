@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
@@ -10,22 +10,9 @@ import { SectionHeading } from "@/components/site/SectionHeading";
 import { Counter } from "@/components/site/Counter";
 import { SERVICE_CATEGORIES, STATS, PROCESS, TESTIMONIALS, FAQ } from "@/lib/content";
 import { SITE } from "@/lib/site";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "G-Creative Tech — Innovate. Create. Repair. Grow." },
-      { name: "description", content: "Your one-stop hub for tech, creativity, growth & repairs. Smart solutions. Real results." },
-      { property: "og:title", content: "G-Creative Tech" },
-      { property: "og:description", content: "Digital solutions, creative services, social media growth and electronics repairs — all in one place." },
-    ],
-    links: [{ rel: "canonical", href: "/" }],
-  }),
-  component: Home,
-});
-
-function Home() {
+export default function Home() {
   const [projects, setProjects] = useState<any[]>([]);
   useEffect(() => {
     supabase

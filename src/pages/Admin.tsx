@@ -1,28 +1,18 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   LayoutDashboard, Briefcase, Sparkles, MessageSquare, Users, Inbox,
   LogOut, Loader2, Plus, Trash2, Save, Edit3, CheckCircle2, Circle, Clock, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { FileUpload } from "@/components/site/FileUpload";
 
 const IMAGE_FIELDS = new Set(["image_url", "photo_url", "logo_url", "avatar_url", "cover_url"]);
 
-export const Route = createFileRoute("/admin")({
-  head: () => ({
-    meta: [
-      { title: "Admin Dashboard — G-Creative Tech" },
-      { name: "robots", content: "noindex,nofollow" },
-    ],
-  }),
-  component: AdminPage,
-});
-
 type Tab = "overview" | "portfolio" | "projects" | "testimonials" | "team" | "requests" | "messages";
 
-function AdminPage() {
+export default function Admin() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [email, setEmail] = useState<string>("");
@@ -33,14 +23,14 @@ function AdminPage() {
     supabase.auth.getSession().then(({ data }) => {
       if (!active) return;
       if (!data.session) {
-        navigate({ to: "/auth" });
+        navigate("/auth");
         return;
       }
       setEmail(data.session.user.email ?? "");
       setReady(true);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") navigate({ to: "/auth" });
+      if (event === "SIGNED_OUT") navigate("/auth");
     });
     return () => {
       active = false;
@@ -123,9 +113,6 @@ function Overview() {
   });
   useEffect(() => {
     (async () => {
-      const tables: Array<keyof typeof stats> = [
-        "portfolio", "projects", "testimonials", "team", "requests", "messages",
-      ];
       const map: Record<string, string> = {
         portfolio: "portfolio_items",
         projects: "recent_projects",
@@ -135,7 +122,7 @@ function Overview() {
         messages: "contact_messages",
       };
       const result: any = {};
-      for (const key of tables) {
+      for (const key of Object.keys(map)) {
         const { count } = await supabase.from(map[key]).select("*", { count: "exact", head: true });
         result[key] = count ?? 0;
       }

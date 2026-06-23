@@ -1,24 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Quote, Star, Play } from "lucide-react";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { TESTIMONIALS, STATS } from "@/lib/content";
 import { Counter } from "@/components/site/Counter";
 
-export const Route = createFileRoute("/testimonials")({
-  head: () => ({
-    meta: [
-      { title: "Testimonials — G-Creative Tech" },
-      { name: "description", content: "Real reviews and success stories from G-Creative Tech clients across web, branding, growth and repair work." },
-      { property: "og:title", content: "Client Testimonials — G-Creative Tech" },
-      { property: "og:description", content: "Loved by clients across boutiques, churches, restaurants and tech startups." },
-    ],
-    links: [{ rel: "canonical", href: "/testimonials" }],
-  }),
-  component: Testimonials,
-});
-
-function Testimonials() {
+export default function Testimonials() {
   return (
     <>
       <section className="relative py-24 overflow-hidden">

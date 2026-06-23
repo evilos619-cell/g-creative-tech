@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { MapPin, Phone, Send, MessageCircle, Mail, Zap } from "lucide-react";
 import { NAV_LINKS, SITE } from "@/lib/site";
 

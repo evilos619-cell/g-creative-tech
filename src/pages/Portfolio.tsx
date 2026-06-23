@@ -1,24 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { X, FolderOpen, Loader2, ExternalLink, Calendar } from "lucide-react";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { PORTFOLIO_CATEGORIES } from "@/lib/content";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-
-export const Route = createFileRoute("/portfolio")({
-  head: () => ({
-    meta: [
-      { title: "Portfolio — G-Creative Tech" },
-      { name: "description", content: "Selected work across web design, branding, social media growth and electronics repair." },
-      { property: "og:title", content: "Portfolio — G-Creative Tech" },
-      { property: "og:description", content: "Real projects. Real results. See what we've built and repaired." },
-    ],
-    links: [{ rel: "canonical", href: "/portfolio" }],
-  }),
-  component: Portfolio,
-});
+import { supabase } from "@/lib/supabase";
 
 type Item = {
   id: string;
@@ -32,7 +18,7 @@ type Item = {
   category: string;
 };
 
-function Portfolio() {
+export default function Portfolio() {
   const [filter, setFilter] = useState<string>("All");
   const [selected, setSelected] = useState<Item | null>(null);
   const [items, setItems] = useState<Item[]>([]);
@@ -67,9 +53,7 @@ function Portfolio() {
       }
       setLoading(false);
     })();
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, []);
 
   const filtered = useMemo(
