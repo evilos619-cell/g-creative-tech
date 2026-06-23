@@ -10,12 +10,28 @@ const SUPABASE_ANON_KEY =
   (import.meta as any).env?.VITE_SUPABASE_ANON_KEY ||
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRicXBiYmV4anVrd3VydGZmZHpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2ODg1MTMsImV4cCI6MjA5NjI2NDUxM30.uJFpdDSk67uTd269qZ3BsOmHUgJEV_CvU3NGEVc80I8";
 
+// Node.js < 22 does not have native WebSocket; provide the `ws` package as transport for SSR.
+async function getWebSocketImpl() {
+  if (typeof WebSocket !== "undefined") return undefined;
+  try {
+    const ws = await import("ws");
+    return ws.default ?? ws;
+  } catch {
+    return undefined;
+  }
+}
+
+const websocketImpl = await getWebSocketImpl();
+
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: typeof window !== "undefined",
     autoRefreshToken: true,
     detectSessionInUrl: true,
     storage: typeof window !== "undefined" ? window.localStorage : undefined,
+  },
+  realtime: {
+    ...(websocketImpl ? { transport: websocketImpl as any } : {}),
   },
 });
 
