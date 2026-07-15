@@ -6,6 +6,20 @@ import { PORTFOLIO_CATEGORIES } from "@/lib/content";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
+type PortfolioRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  project_url: string | null;
+  client_name: string | null;
+  completed_at: string | null;
+  tags: string[] | null;
+  portfolio_categories?: Array<{
+    name: string | null;
+  }> | null;
+};
+
 type Item = {
   id: string;
   title: string;
@@ -29,7 +43,9 @@ export default function Portfolio() {
     (async () => {
       const { data, error } = await supabase
         .from("portfolio_items")
-        .select("id,title,description,image_url,project_url,client_name,completed_at,tags,portfolio_categories(name)")
+        .select(
+          "id,title,description,image_url,project_url,client_name,completed_at,tags,portfolio_categories(name)",
+        )
         .eq("published", true)
         .order("created_at", { ascending: false });
       if (!active) return;
@@ -38,7 +54,7 @@ export default function Portfolio() {
         setItems([]);
       } else {
         setItems(
-          (data ?? []).map((row: any) => ({
+          (data ?? []).map((row: PortfolioRow) => ({
             id: row.id,
             title: row.title,
             description: row.description,
@@ -47,7 +63,7 @@ export default function Portfolio() {
             client_name: row.client_name,
             completed_at: row.completed_at,
             tags: row.tags,
-            category: row.portfolio_categories?.name ?? "Other",
+            category: row.portfolio_categories?.[0]?.name ?? "Other",
           })),
         );
       }

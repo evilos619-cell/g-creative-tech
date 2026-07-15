@@ -26,16 +26,26 @@ export const supabase = MISSING
     });
 
 export type Tables = {
+  profiles: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+    bio: string | null;
+    website: string | null;
+    created_at: string;
+    updated_at: string;
+  };
   portfolio_categories: {
     id: string;
     name: string;
     slug: string;
     created_at: string;
+    updated_at: string;
   };
   portfolio_items: {
     id: string;
     title: string;
-    slug: string;
+    slug: string | null;
     category_id: string | null;
     description: string | null;
     image_url: string | null;
@@ -45,6 +55,7 @@ export type Tables = {
     tags: string[] | null;
     published: boolean;
     created_at: string;
+    updated_at: string;
   };
   recent_projects: {
     id: string;
@@ -54,6 +65,7 @@ export type Tables = {
     image_url: string | null;
     published: boolean;
     created_at: string;
+    updated_at: string;
   };
   testimonials: {
     id: string;
@@ -64,6 +76,7 @@ export type Tables = {
     logo_url: string | null;
     enabled: boolean;
     created_at: string;
+    updated_at: string;
   };
   team_members: {
     id: string;
@@ -74,6 +87,7 @@ export type Tables = {
     sort_order: number;
     published: boolean;
     created_at: string;
+    updated_at: string;
   };
   service_requests: {
     id: string;
@@ -84,6 +98,7 @@ export type Tables = {
     message: string;
     status: "pending" | "in_progress" | "completed";
     created_at: string;
+    updated_at: string;
   };
   contact_messages: {
     id: string;
@@ -93,10 +108,21 @@ export type Tables = {
     message: string;
     read: boolean;
     created_at: string;
+    updated_at: string;
+  };
+  settings: {
+    id: string;
+    key: string;
+    value: Record<string, unknown>;
+    description: string | null;
+    created_at: string;
+    updated_at: string;
   };
   user_roles: {
     id: string;
     user_id: string;
     role: "admin" | "user";
+    created_at: string;
+    updated_at: string;
   };
 };
