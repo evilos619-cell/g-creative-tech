@@ -4,6 +4,7 @@ import { Phone, Mail, MessageCircle, Send, MapPin, Clock, Loader2 } from "lucide
 import { Button } from "@/components/ui/button";
 import { SITE } from "@/lib/site";
 import { supabase } from "@/lib/supabase";
+import { TableSchemas } from "@/lib/schemas";
 
 export default function Contact() {
   const [loading, setLoading] = useState(false);
