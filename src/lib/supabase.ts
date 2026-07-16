@@ -12,20 +12,13 @@ if (MISSING) {
   );
 }
 
-export const supabase = MISSING
-  ? createClient(
-      "https://placeholder.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MDAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.placeholder",
-    )
-  : createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    });
+type TableDefinition<Row, Insert = Partial<Omit<Row, 'id' | 'created_at' | 'updated_at'>> & { id?: string }, Update = Partial<Omit<Row, 'created_at' | 'updated_at'>>> = {
+  Row: Row;
+  Insert: Insert;
+  Update: Update;
+};
 
-export type Tables = {
+type Tables = {
   profiles: {
     id: string;
     full_name: string | null;
@@ -83,6 +76,7 @@ export type Tables = {
     name: string;
     position: string;
     description: string | null;
+    bio: string | null;
     photo_url: string | null;
     sort_order: number;
     published: boolean;
@@ -126,3 +120,126 @@ export type Tables = {
     updated_at: string;
   };
 };
+
+type Database = {
+  public: {
+    Tables: {
+      profiles: TableDefinition<{
+        id: string;
+        full_name: string | null;
+        avatar_url: string | null;
+        bio: string | null;
+        website: string | null;
+        created_at: string;
+        updated_at: string;
+      }>;
+      portfolio_categories: TableDefinition<{
+        id: string;
+        name: string;
+        slug: string;
+        created_at: string;
+        updated_at: string;
+      }>;
+      portfolio_items: TableDefinition<{
+        id: string;
+        title: string;
+        slug: string | null;
+        category_id: string | null;
+        description: string | null;
+        image_url: string | null;
+        project_url: string | null;
+        client_name: string | null;
+        completed_at: string | null;
+        tags: string[] | null;
+        published: boolean;
+        created_at: string;
+        updated_at: string;
+      }>;
+      recent_projects: TableDefinition<{
+        id: string;
+        title: string;
+        description: string | null;
+        category: string | null;
+        image_url: string | null;
+        published: boolean;
+        created_at: string;
+        updated_at: string;
+      }>;
+      testimonials: TableDefinition<{
+        id: string;
+        client_name: string;
+        role: string | null;
+        quote: string;
+        rating: number;
+        logo_url: string | null;
+        enabled: boolean;
+        created_at: string;
+        updated_at: string;
+      }>;
+      team_members: TableDefinition<{
+        id: string;
+        name: string;
+        position: string;
+        description: string | null;
+        bio: string | null;
+        photo_url: string | null;
+        sort_order: number;
+        published: boolean;
+        created_at: string;
+        updated_at: string;
+      }>;
+      service_requests: TableDefinition<{
+        id: string;
+        name: string;
+        email: string;
+        phone: string | null;
+        service: string | null;
+        message: string;
+        status: "pending" | "in_progress" | "completed";
+        created_at: string;
+        updated_at: string;
+      }>;
+      contact_messages: TableDefinition<{
+        id: string;
+        name: string;
+        email: string;
+        subject: string | null;
+        message: string;
+        read: boolean;
+        created_at: string;
+        updated_at: string;
+      }>;
+      settings: TableDefinition<{
+        id: string;
+        key: string;
+        value: Record<string, unknown>;
+        description: string | null;
+        created_at: string;
+        updated_at: string;
+      }>;
+      user_roles: TableDefinition<{
+        id: string;
+        user_id: string;
+        role: "admin" | "user";
+        created_at: string;
+        updated_at: string;
+      }>;
+    };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+  };
+};
+
+export const supabase: any = MISSING
+  ? createClient(
+      "https://placeholder.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MDAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.placeholder",
+    )
+  : createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    });

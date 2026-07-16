@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { X, FolderOpen, Loader2, ExternalLink, Calendar } from "lucide-react";
 import { SectionHeading } from "@/components/site/SectionHeading";
-import { PORTFOLIO_CATEGORIES } from "@/lib/content";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
@@ -15,9 +14,12 @@ type PortfolioRow = {
   client_name: string | null;
   completed_at: string | null;
   tags: string[] | null;
-  portfolio_categories?: Array<{
+  category_id: string | null;
+  portfolio_categories?: {
+    id: string | null;
     name: string | null;
-  }> | null;
+    slug: string | null;
+  }[] | null;
 };
 
 type Item = {
@@ -36,18 +38,24 @@ export default function Portfolio() {
   const [filter, setFilter] = useState<string>("All");
   const [selected, setSelected] = useState<Item | null>(null);
   const [items, setItems] = useState<Item[]>([]);
+  const [categories, setCategories] = useState<string[]>(["All"]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data, error } = await supabase
-        .from("portfolio_items")
-        .select(
-          "id,title,description,image_url,project_url,client_name,completed_at,tags,portfolio_categories(name)",
-        )
-        .eq("published", true)
-        .order("created_at", { ascending: false });
+      const [itemsRes, catsRes] = await Promise.all([
+        supabase
+          .from("portfolio_items")
+          .select(
+            "id,title,description,image_url,project_url,client_name,completed_at,tags,category_id,portfolio_categories(id,name,slug)",
+          )
+          .eq("published", true)
+          .order("created_at", { ascending: false }),
+        supabase.from("portfolio_categories").select("id,name").order("name"),
+      ]);
+      const { data, error } = itemsRes as any;
+      const catsData = (catsRes as any).data ?? [];
       if (!active) return;
       if (error) {
         console.error("[portfolio] fetch error:", error.message);
@@ -67,6 +75,8 @@ export default function Portfolio() {
           })),
         );
       }
+      // build category filter list dynamically
+      setCategories(["All", ...catsData.map((c: any) => c.name)]);
       setLoading(false);
     })();
     return () => { active = false; };
@@ -94,7 +104,7 @@ export default function Portfolio() {
       <section className="pb-24">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex flex-wrap justify-center gap-2 mb-10">
-            {PORTFOLIO_CATEGORIES.map((c) => (
+            {categories.map((c) => (
               <button
                 key={c}
                 onClick={() => setFilter(c)}

@@ -2,7 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   LayoutDashboard, Briefcase, Sparkles, MessageSquare, Users, Inbox,
-  LogOut, Loader2, Plus, Trash2, Save, Edit3, CheckCircle2, Circle, Clock, X,
+  LogOut, Loader2, Plus, Trash2, Save, Edit3, CheckCircle2, Circle, Clock, X, Menu,
+  Sun, Moon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
@@ -17,19 +18,38 @@ export default function Admin() {
   const [ready, setReady] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [tab, setTab] = useState<Tab>("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      const saved = localStorage.getItem('gct_theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    } catch { return 'dark'; }
+  });
+
+  // apply theme to document and persist
+  useEffect(() => {
+    try {
+      const doc = document.documentElement;
+      if (theme === 'dark') doc.classList.add('dark'); else doc.classList.remove('dark');
+      localStorage.setItem('gct_theme', theme);
+    } catch {
+      // ignore in SSR/test
+    }
+  }, [theme]);
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then((res: any) => {
       if (!active) return;
-      if (!data.session) {
+      if (!res.data?.session) {
         navigate("/auth");
         return;
       }
-      setEmail(data.session.user.email ?? "");
+      setEmail(res.data.session.user.email ?? "");
       setReady(true);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event: any) => {
       if (event === "SIGNED_OUT") navigate("/auth");
     });
     return () => {
@@ -65,17 +85,30 @@ export default function Admin() {
           </h1>
           <p className="text-sm text-muted-foreground">Signed in as {email}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 md:hidden">
+          <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg bg-secondary hover:bg-secondary/90">
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="flex gap-2 items-center">
+          <button
+            aria-label="Toggle theme"
+            onClick={() => setTheme((t) => t === 'dark' ? 'light' : 'dark')}
+            className="p-2 rounded-lg bg-secondary hover:bg-secondary/90"
+            title="Toggle dark / light"
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           <Link to="/"><Button variant="glass" size="sm">View site</Button></Link>
           <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>
             <LogOut className="h-4 w-4" /> Sign out
           </Button>
         </div>
       </header>
-
       <div className="grid lg:grid-cols-[240px_1fr] gap-6">
-        <aside className="glass rounded-2xl p-3 h-fit lg:sticky lg:top-24">
-          <nav className="flex lg:flex-col gap-1 overflow-x-auto">
+        {/* Desktop / md+ sidebar */}
+        <aside className="glass rounded-2xl p-3 h-fit lg:sticky lg:top-24 hidden md:block">
+          <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
             {TABS.map((t) => (
               <button
                 key={t.id}
@@ -91,6 +124,34 @@ export default function Admin() {
             ))}
           </nav>
         </aside>
+
+        {/* Mobile slide-over sidebar */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-50 flex">
+            <div className="fixed inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
+            <aside className="glass w-72 p-3 m-4 rounded-2xl overflow-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-bold">Menu</h3>
+                <button onClick={() => setSidebarOpen(false)} className="p-1 rounded-full bg-secondary"><X className="h-4 w-4" /></button>
+              </div>
+              <nav className="flex flex-col gap-1">
+                {TABS.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => { setTab(t.id); setSidebarOpen(false); }}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                      tab === t.id
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    <t.icon className="h-4 w-4" /> {t.label}
+                  </button>
+                ))}
+              </nav>
+            </aside>
+          </div>
+        )}
 
         <main className="min-w-0">
           {tab === "overview" && <Overview />}
@@ -172,12 +233,12 @@ function PortfolioManager() {
 
   const save = async (form: any) => {
     const payload = {
-      title: form.title,
-      description: form.description || null,
+      title: form.title?.trim(),
+      description: form.description?.trim() || null,
       category_id: form.category_id || null,
       image_url: form.image_url || null,
       project_url: form.project_url || null,
-      client_name: form.client_name || null,
+      client_name: form.client_name?.trim() || null,
       completed_at: form.completed_at || null,
       tags: form.tags ? form.tags.split(",").map((s: string) => s.trim()).filter(Boolean) : null,
       published: !!form.published,
@@ -260,7 +321,7 @@ function CategoryEditor({ cats, onChange }: { cats: any[]; onChange: () => void 
         ))}
         {cats.length === 0 && <span className="text-sm text-muted-foreground">No categories yet.</span>}
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="New category name" className="flex-1 px-3 py-2 rounded-lg bg-secondary border border-border outline-none focus:border-primary text-sm" />
         <Button size="sm" variant="hero" onClick={add}><Plus className="h-3 w-3" /> Add</Button>
       </div>
@@ -294,7 +355,7 @@ function PortfolioForm({ item, cats, onSave, onCancel }: any) {
         <FileUpload value={form.image_url} onChange={(url) => setForm({ ...form, image_url: url })} folder="portfolio" />
       </FormField>
       <FormField label="Project URL"><input value={form.project_url} onChange={(e) => setForm({ ...form, project_url: e.target.value })} className={inputCls} placeholder="https://..." /></FormField>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <FormField label="Client name"><input value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })} className={inputCls} /></FormField>
         <FormField label="Completed"><input type="date" value={form.completed_at} onChange={(e) => setForm({ ...form, completed_at: e.target.value })} className={inputCls} /></FormField>
       </div>
@@ -302,7 +363,7 @@ function PortfolioForm({ item, cats, onSave, onCancel }: any) {
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={form.published} onChange={(e) => setForm({ ...form, published: e.target.checked })} /> Published
       </label>
-      <div className="flex justify-end gap-2 pt-2">
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
         <Button type="button" variant="outline" size="sm" onClick={onCancel}>Cancel</Button>
         <Button type="submit" variant="hero" size="sm"><Save className="h-3 w-3" /> Save</Button>
       </div>
@@ -597,7 +658,7 @@ function GenericForm({ fields, item, onSave, onCancel }: { fields: FieldDef[]; i
           )}
         </FormField>
       ))}
-      <div className="flex justify-end gap-2 pt-2">
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
         <Button type="button" variant="outline" size="sm" onClick={onCancel}>Cancel</Button>
         <Button type="submit" variant="hero" size="sm"><Save className="h-3 w-3" /> Save</Button>
       </div>
@@ -611,7 +672,7 @@ const inputCls = "w-full px-3 py-2 rounded-lg bg-secondary border border-border 
 function Section({ title, subtitle, action, children }: { title: string; subtitle?: string; action?: ReactNode; children: ReactNode }) {
   return (
     <div>
-      <div className="flex items-end justify-between gap-3 mb-5 flex-wrap">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-5">
         <div>
           <h2 className="text-2xl font-bold">{title}</h2>
           {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
@@ -633,7 +694,7 @@ function FormField({ label, children }: { label: string; children: ReactNode }) 
 function Modal({ children, title, onClose }: { children: ReactNode; title: string; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
-      <div className="glass rounded-3xl max-w-lg w-full p-6 md:p-8 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="glass rounded-3xl max-w-lg w-full p-4 sm:p-6 md:p-8 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold">{title}</h3>
           <button onClick={onClose} className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center hover:bg-primary hover:text-primary-foreground"><X className="h-4 w-4" /></button>

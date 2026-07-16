@@ -23,11 +23,11 @@ export function useAdminRole() {
       if (active) setState({ isAdmin: !!data, userId: uid, loading: false });
     };
 
-    supabase.auth.getSession().then(({ data }) => {
-      check(data.session?.user?.id ?? null);
+    supabase.auth.getSession().then((res: any) => {
+      check(res.data?.session?.user?.id ?? null);
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_e: any, session: any) => {
       check(session?.user?.id ?? null);
     });
 

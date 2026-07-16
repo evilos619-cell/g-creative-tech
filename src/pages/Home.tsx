@@ -21,7 +21,7 @@ export default function Home() {
       .eq("published", true)
       .order("created_at", { ascending: false })
       .limit(6)
-      .then(({ data }) => setProjects(data ?? []));
+      .then((res: any) => setProjects(res.data ?? []));
   }, []);
 
   return (

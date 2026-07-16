@@ -14,8 +14,8 @@ export default function Auth() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate("/admin");
+    supabase.auth.getSession().then((res: any) => {
+      if (res.data?.session) navigate("/admin");
     });
   }, [navigate]);
 
