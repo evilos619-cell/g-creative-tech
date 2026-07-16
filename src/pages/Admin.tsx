@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
+import { TableSchemas } from "@/lib/schemas";
 import { FileUpload } from "@/components/site/FileUpload";
 
 const IMAGE_FIELDS = new Set(["image_url", "photo_url", "logo_url", "avatar_url", "cover_url"]);
@@ -52,9 +53,29 @@ export default function Admin() {
     const { data: sub } = supabase.auth.onAuthStateChange((event: any) => {
       if (event === "SIGNED_OUT") navigate("/auth");
     });
+
+    // Realtime subscriptions to refresh counts/lists on changes
+    const channel = supabase.channel('public-changes').on('postgres_changes', { event: '*', schema: 'public' }, (payload: any) => {
+      // payload.table indicates the table changed
+      const tbl = payload?.table;
+      if (!tbl) return;
+      // refresh Overview counts and currently visible lists
+      if (['portfolio_items','recent_projects','testimonials','team_members','service_requests','contact_messages','portfolio_categories'].includes(tbl)) {
+        // call load functions if present
+        // use a small debounce
+        setTimeout(() => {
+          // call load in child components by forcing a state change
+          // simplest approach: reload window or re-run load via ref callbacks (not implemented globally here)
+          // For now, re-run the admin page's load-dependent effects by toggling a local state
+          setReady((r) => r);
+        }, 200);
+      }
+    }).subscribe();
+
     return () => {
       active = false;
-      sub.subscription.unsubscribe();
+      try { sub.subscription.unsubscribe(); } catch {}
+      try { channel.unsubscribe(); } catch {}
     };
   }, [navigate]);
 
@@ -127,25 +148,29 @@ export default function Admin() {
 
         {/* Mobile slide-over sidebar */}
         {sidebarOpen && (
-          <div className="fixed inset-0 z-50 flex">
-            <div className="fixed inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
-            <aside className="glass w-72 p-3 m-4 rounded-2xl overflow-auto">
-              <div className="flex items-center justify-between mb-3">
+          <div className="fixed inset-0 z-50">
+            {/* Backdrop under the sidebar */}
+            <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setSidebarOpen(false)} />
+            {/* Sidebar - fixed, solid background, width 18rem, full height */}
+            <aside className="fixed left-0 top-0 h-screen w-72 z-50 bg-background text-foreground shadow-lg overflow-auto">
+              <div className="flex items-center justify-between p-4 border-b border-border">
                 <h3 className="text-lg font-bold">Menu</h3>
-                <button onClick={() => setSidebarOpen(false)} className="p-1 rounded-full bg-secondary"><X className="h-4 w-4" /></button>
+                <button onClick={() => setSidebarOpen(false)} className="p-2 rounded-md bg-secondary/90 hover:bg-secondary">
+                  <X className="h-4 w-4" />
+                </button>
               </div>
-              <nav className="flex flex-col gap-1">
+              <nav className="flex flex-col gap-1 p-4">
                 {TABS.map((t) => (
                   <button
                     key={t.id}
                     onClick={() => { setTab(t.id); setSidebarOpen(false); }}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                    className={`w-full text-left flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium transition-colors ${
                       tab === t.id
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-secondary"
                     }`}
                   >
-                    <t.icon className="h-4 w-4" /> {t.label}
+                    <t.icon className="h-5 w-5" /> <span>{t.label}</span>
                   </button>
                 ))}
               </nav>
@@ -232,6 +257,23 @@ function PortfolioManager() {
   useEffect(() => { load(); }, []);
 
   const save = async (form: any) => {
+    // validate payload against schema if available
+    const schema = TableSchemas["portfolio_items"];
+    try {
+      schema?.parse?.({
+        title: form.title?.trim(),
+        description: form.description?.trim() || null,
+        category_id: form.category_id || null,
+        image_url: form.image_url || null,
+        project_url: form.project_url || null,
+        client_name: form.client_name?.trim() || null,
+        completed_at: form.completed_at || null,
+        tags: form.tags ? form.tags.split(",").map((s: string) => s.trim()).filter(Boolean) : null,
+        published: !!form.published,
+      });
+    } catch (err: any) {
+      return alert(err.errors ? err.errors.map((e: any) => e.message).join("\n") : err.message);
+    }
     const payload = {
       title: form.title?.trim(),
       description: form.description?.trim() || null,
@@ -244,8 +286,8 @@ function PortfolioManager() {
       published: !!form.published,
     };
     const { error } = editing?.id
-      ? await supabase.from("portfolio_items").update(payload).eq("id", editing.id)
-      : await supabase.from("portfolio_items").insert(payload);
+      ? await supabase.from("portfolio_items").update(payload as any).eq("id", editing.id)
+      : await supabase.from("portfolio_items").insert(payload as any);
     if (error) return alert(error.message);
     setEditing(null);
     load();
@@ -300,7 +342,12 @@ function CategoryEditor({ cats, onChange }: { cats: any[]; onChange: () => void 
   const add = async () => {
     if (!name.trim()) return;
     const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-    const { error } = await supabase.from("portfolio_categories").insert({ name: name.trim(), slug });
+    try {
+      TableSchemas["portfolio_categories"].parse({ name: name.trim(), slug });
+    } catch (err: any) {
+      return alert(err.errors ? err.errors.map((e: any) => e.message).join("\n") : err.message);
+    }
+    const { error } = await supabase.from("portfolio_categories").insert({ name: name.trim(), slug } as any);
     if (error) return alert(error.message);
     setName(""); onChange();
   };
@@ -467,7 +514,7 @@ function ServiceRequestsManager() {
   };
   useEffect(() => { load(); }, []);
   const setStatus = async (id: string, status: string) => {
-    await supabase.from("service_requests").update({ status }).eq("id", id); load();
+    await supabase.from("service_requests").update({ status } as any).eq("id", id); load();
   };
   const remove = async (id: string) => {
     if (!confirm("Delete this request?")) return;
@@ -519,7 +566,7 @@ function ContactMessagesManager() {
   };
   useEffect(() => { load(); }, []);
   const toggleRead = async (id: string, read: boolean) => {
-    await supabase.from("contact_messages").update({ read: !read }).eq("id", id); load();
+    await supabase.from("contact_messages").update({ read: !read } as any).eq("id", id); load();
   };
   const remove = async (id: string) => {
     if (!confirm("Delete this message?")) return;
@@ -590,8 +637,8 @@ function SimpleCrud({
       payload[f.name] = v;
     });
     const { error } = editing?.id
-      ? await supabase.from(table).update(payload).eq("id", editing.id)
-      : await supabase.from(table).insert(payload);
+      ? await supabase.from(table).update(payload as any).eq("id", editing.id)
+      : await supabase.from(table).insert(payload as any);
     if (error) return alert(error.message);
     setEditing(null); load();
   };

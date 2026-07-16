@@ -6,6 +6,7 @@ export const SITE = {
   phone: "07062431475",
   whatsapp: "https://wa.me/2347062431475",
   telegram: "https://t.me/gcreativetechhimself",
+  tiktok: "https://vm.tiktok.com/ZS9MKcvA3BoJX-cnXZP/",
   email: "goodnesschukwuma619@gmail.com",
   address: "Chief Obi Agbor Compound, Primary School, Etomi.",
 };

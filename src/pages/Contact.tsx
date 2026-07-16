@@ -22,9 +22,16 @@ export default function Contact() {
     const service = String(data.get("service") ?? "");
     const message = String(data.get("message") ?? "");
 
+    try {
+      TableSchemas["service_requests"].parse({ name, email, phone: phone || null, service: service || null, message });
+    } catch (err: any) {
+      setError(err.errors ? err.errors.map((e: any) => e.message).join("\n") : err.message);
+      setLoading(false);
+      return;
+    }
     const { error: dbError } = await supabase.from("service_requests").insert({
       name, email, phone: phone || null, service: service || null, message, status: "pending",
-    });
+    } as any);
     if (dbError) {
       setError("Couldn't save your request, but we can still route it to WhatsApp.");
       console.error(dbError);

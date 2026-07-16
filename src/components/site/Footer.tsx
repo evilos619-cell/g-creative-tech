@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MapPin, Phone, Send, MessageCircle, Mail, Zap } from "lucide-react";
+import { MapPin, Phone, Send, MessageCircle, Mail, Zap, ExternalLink } from "lucide-react";
 import { NAV_LINKS, SITE } from "@/lib/site";
 
 export function Footer() {
@@ -53,6 +53,9 @@ export function Footer() {
             </li>
             <li className="flex gap-2"><Mail className="h-4 w-4 text-primary shrink-0 mt-0.5" /> {SITE.email}</li>
             <li className="flex gap-2"><MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" /> {SITE.address}</li>
+            <li className="flex gap-2"><ExternalLink className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+              <a href={SITE.tiktok} className="hover:text-primary" target="_blank" rel="noreferrer">TikTok</a>
+            </li>
           </ul>
         </div>
       </div>
